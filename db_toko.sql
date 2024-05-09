@@ -32,9 +32,9 @@ CREATE TABLE `barang` (
   PRIMARY KEY (`id_barang`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-/*Table structure for table `id_detail_transaksi` */
+/*Table structure for table `detail_transaksi` */
 
-DROP TABLE IF EXISTS `id_detail_transaksi`;
+DROP TABLE IF EXISTS `detail_transaksi`;
 
 CREATE TABLE `detail_transaksi` (
   `id_detail_transaksi` int(11) NOT NULL AUTO_INCREMENT,
