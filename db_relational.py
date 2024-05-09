@@ -1,6 +1,5 @@
 import mysql.connector as mysql 
 import time
-import random
 
 from typing import Final
 from pymemcache.client import base
@@ -83,11 +82,22 @@ def test(n:int):
     # RESET AUTO INCREMENT
     cur.execute("ALTER TABLE pelanggan AUTO_INCREMENT = 1")
     conn.commit()
+    cur.execute("TRUNCATE TABLE pelanggan")
+    conn.commit()
+
     cur.execute("ALTER TABLE barang AUTO_INCREMENT = 1")
     conn.commit()
+    cur.execute("TRUNCATE TABLE barang")
+    conn.commit()
+
     cur.execute("ALTER TABLE transaksi AUTO_INCREMENT = 1")
     conn.commit()
+    cur.execute("TRUNCATE TABLE transaksi")
+    conn.commit()
+
     cur.execute("ALTER TABLE detail_transaksi AUTO_INCREMENT = 1")
+    conn.commit()
+    cur.execute("TRUNCATE TABLE detail_transaksi")
     conn.commit()
 
     # DATA BARANG + PELANGGAN
@@ -129,12 +139,12 @@ def test(n:int):
         idTrans = i + 1
 
         for j in range(5):
-            # INSERT DATA DETAIL TRANSAKSI
             id_barang = idBarang
             harga_jual = listHargaJualBarang[id_barang-1]
             qty = 5
             total_harga = harga_jual * qty
 
+            # INSERT DATA DETAIL TRANSAKSI
             start_time = time.time()
             cur.execute("INSERT INTO detail_transaksi (id_transaksi, id_barang, jumlah, harga_per_item, total_harga) VALUES (%s, %s, %s, %s, %s)",(idTrans, id_barang, qty, harga_jual, total_harga))
             conn.commit()
@@ -145,12 +155,11 @@ def test(n:int):
 
             subtotal += total_harga
             idBarang += 1
+
             # Pengulangan ID BARANG
             if idBarang > 10:
                 idBarang = 1
         
-        
-
         id_member = idMember
 
         # Pengulangan ID MEMBER
@@ -160,8 +169,8 @@ def test(n:int):
 
         status = listEnum[1]
 
+        # INSERT DATA TRANSAKSI
         start_time = time.time()
-        # Insert data transaksi into tb_trans
         cur.execute("INSERT INTO transaksi (id_pelanggan, status, subtotal) VALUES (%s, %s, %s)", (id_member, status, subtotal))
         conn.commit()
         end_time = time.time()
@@ -169,22 +178,19 @@ def test(n:int):
         operasi_query_insert += 1
         total_time_insert += (end_time - start_time)
 
+        # SELECT DATA TRANSAKSI
         start_time = time.time()
-        # Select data transaksi from tb_trans
         cur.execute(f"SELECT * from transaksi WHERE id_transaksi = {idTrans}")
-        # result_trans = select * from tb_trans WHERE id_trans = idTrans
-        end_time = time.time()
-        # GET DATA TRANS
         data_trans = cur.fetchone()
+        end_time = time.time()
     
         operasi_query_select += 1
         total_time_select += (end_time - start_time)
         id_pelanggan = data_trans['id_pelanggan']
 
+        # SELECT DATA PELANGGAN
         start_time = time.time()
-        # Select data pelanggan from tb_pelanggan
         cur.execute(f"SELECT * from pelanggan WHERE id_pelanggan = {id_pelanggan}")
-        # result_pelanggan = select * from tb_pelanggan WHERE id_pelanggan = result_trans->id_pelanggan
         end_time = time.time()
         cur.fetchone()
 
@@ -194,22 +200,19 @@ def test(n:int):
         for j in range(5):
             idDetail = ((i+1) * 5) - 5 + (j+1)
 
+            # SELECT DATA DETAIL TRANSAKSI
             start_time = time.time()
-            # Select data detail transaksi from tb_trans_detail
             cur.execute(f"SELECT * FROM detail_transaksi WHERE id_detail_transaksi = {idDetail}")
-            # result_detail = select * from tb_trans_detail WHERE id_detail = idDetail
             end_time = time.time()
             data_detail = cur.fetchone()
 
             operasi_query_select += 1
             total_time_select += (end_time - start_time)
             
+            # SELECT DATA BARANG
             id_barang = data_detail['id_barang']
-
             start_time = time.time()
-            # Select data barang from tb_barang
             cur.execute(f"SELECT * FROM barang WHERE id_barang = {id_barang}")
-            # result_barang = select * from tb_barang WHERE id_barang = result_detail->id_barang
             end_time = time.time()
             cur.fetchone()
 
@@ -220,26 +223,24 @@ def test(n:int):
             cur.execute(f"SELECT table_schema AS `DATABASE`, SUM(data_length + index_length) / (1024 * 1024) AS `SIZE` FROM information_schema.tables WHERE table_schema = '{DB_NAME}' GROUP BY table_schema;")
             size_db = cur.fetchone()['SIZE']
 
-    # DELETE DATA TRANS = DETAIL
+    # DELETE DATA TRANSAKSI = DETAIL
     for i in range(n):
         print(f"delete {i+1}")
         idTrans = i + 1
 
+        # DELETE DATA TRANSAKSI
         start_time = time.time()
-        # Delete data detail transaksi from tb_trans_detail
         cur.execute(f"DELETE FROM detail_transaksi WHERE id_transaksi = {idTrans}")
         conn.commit()
-        # delete data from tb_trans_detail WHERE id_trans = idTrans
         end_time = time.time()
 
         operasi_query_delete += 1
         total_time_delete += (end_time - start_time)
 
+        # DELETE DATA DETAIL TRANSAKSI
         start_time = time.time()
-        # Delete data transaksi from tb_trans
         cur.execute(f"DELETE FROM transaksi WHERE id_transaksi = {idTrans}")
         conn.commit()
-        # delete data from tb_trans WHERE id_trans = idTrans
         end_time = time.time()
 
         operasi_query_delete += 1
