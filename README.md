@@ -1,4 +1,5 @@
-
+PSEUDO CODE : 
+'''
 operasi_query_insert = 0
 operasi_query_select = 0
 operasi_query_delete = 0
@@ -150,3 +151,4 @@ for i in range(10):
 	
 	operasi_query_delete += 1
 	total_time_delete += (end_time - start_time)
+'''
