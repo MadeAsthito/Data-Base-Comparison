@@ -106,18 +106,19 @@ def test_relational():
         total_time_insert += (end_time - start_time)
 
     # DATA TRANS + DETAIL TRANS
-    for i in range(1001):
-        idTrans = i + 1
+    idBarang = 1
+    for i in range(1000):
         subtotal = 0
+        idTrans = i + 1
 
         for j in range(5):
-            id_barang = random.randint(1, 10)
-            harga_jual = listHargaJualBarang[id_barang]
-            qty = random.randint(1, 10)
+            # INSERT DATA DETAIL TRANSAKSI
+            id_barang = idBarang
+            harga_jual = listHargaJualBarang[id_barang-1]
+            qty = 5
             total_harga = harga_jual * qty
 
             start_time = time()
-            # Insert data detail transaksi into tb_trans_detail
             cur.execute("INSERT INTO detail_transaksi (id_transaksi, id_barang, jumlah, harga_per_item, total_harga) VALUES (%s, %s, %s, %s, %s)",(idTrans, id_barang, qty, harga_jual, total_harga))
             end_time = time()
 
@@ -125,9 +126,16 @@ def test_relational():
             total_time_insert += (end_time - start_time)
 
             subtotal += total_harga
+            idBarang += 1
+
+        # Perulangan
+        if idBarang == 10:
+            idBarang = 1
+        else:
+            idBarang -= 5 + 1
 
         id_member = random.randint(1, 10)
-        status = listEnum[random.randint(0, 1)]
+        status = listEnum[1]
 
         start_time = time()
         # Insert data transaksi into tb_trans
