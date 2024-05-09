@@ -10,7 +10,12 @@ if __name__ == '__main__':
     gf.get_db_size()
     print()
 
+    print("Query with no Caching")
     gf.measure_query_execution(query, iterations)
+    print()
+
+    print("Query with Caching")
+    gf.measure_query_execution(query, iterations, True)
     print()
 
     gf.measure_select_generated_data()
