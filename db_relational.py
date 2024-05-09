@@ -1,5 +1,6 @@
-import mysql.connector as mysql
+import mysql_connector as mysql 
 import time
+import random
 
 from typing import Final
 from pymemcache.client import base
@@ -8,7 +9,7 @@ from pymemcache.client import base
 DB_HOST: Final = "localhost"
 DB_USER: Final = "root"
 DB_PASSWORD: Final = ""
-DB_NAME: Final = "db_toko"
+DB_NAME: Final = "db_toko_relational"
 
 # CONNECT DATABASE
 conn = mysql.connect(
@@ -67,6 +68,7 @@ listHargaBeliBarang = [
     8000, 25000, 10000, 15000, 12000,
     18000, 16000, 21000, 5000, 12000
 ]
+listEnum = ["pending", "success"]
 
 cur = conn.cursor(dictionary=True)
 
@@ -104,7 +106,99 @@ def test_relational():
         total_time_insert += (end_time - start_time)
 
     # DATA TRANS + DETAIL TRANS
+    for i in range(1001):
+        idTrans = i + 1
+        subtotal = 0
 
+        for j in range(5):
+            id_barang = random.randint(1, 10)
+            harga_jual = listHargaJualBarang[id_barang]
+            qty = random.randint(1, 10)
+            total_harga = harga_jual * qty
+
+            start_time = time()
+            # Insert data detail transaksi into tb_trans_detail
+            cur.execute("INSERT INTO detail_transaksi (id_transaksi, id_barang, jumlah, harga_per_item, total_harga) VALUES (%s, %s, %s, %s, %s)",(idTrans, id_barang, qty, harga_jual, total_harga))
+            end_time = time()
+
+            operasi_query_insert += 1
+            total_time_insert += (end_time - start_time)
+
+            subtotal += total_harga
+
+        id_member = random.randint(1, 10)
+        status = listEnum[random.randint(0, 1)]
+
+        start_time = time()
+        # Insert data transaksi into tb_trans
+        cur.execute("INSERT INTO transaksi (id_pelanggan, status, subtotal) VALUES (%s, %s, %s)", (id_member, status, subtotal))
+        end_time = time()
+
+        operasi_query_insert += 1
+        total_time_insert += (end_time - start_time)
+
+        start_time = time()
+        # Select data transaksi from tb_trans
+        cur.execute(f"SELECT * from transaksi WHERE id_transaksi = {idTrans}")
+        # result_trans = select * from tb_trans WHERE id_trans = idTrans
+        end_time = time()
+    
+        operasi_query_select += 1
+        total_time_select += (end_time - start_time)
+        # data trans
+        data_trans = cur.fetchone()
+        id_pelanggan = data_trans['id_pelanggan']
+
+        start_time = time()
+        # Select data pelanggan from tb_pelanggan
+        cur.execute(f"SELECT * from pelanggan WHERE id_pelanggan = {id_pelanggan}")
+        # result_pelanggan = select * from tb_pelanggan WHERE id_pelanggan = result_trans->id_pelanggan
+        end_time = time()
+
+        operasi_query_select += 1
+        total_time_select += (end_time - start_time)
+
+        for j in range(5):
+            idDetail = (i * 5) - 5 + j
+
+            start_time = time()
+            # Select data detail transaksi from tb_trans_detail
+            cur.execute(f"SELECT * FROM detail_transaksi WHERE id_detail_transaksi = {idDetail}")
+            # result_detail = select * from tb_trans_detail WHERE id_detail = idDetail
+            end_time = time()
+
+            operasi_query_select += 1
+            total_time_select += (end_time - start_time)
+            
+            data_detail = cur.fetchone()
+            id_barang = data_detail['id_barang']
+
+            start_time = time()
+            # Select data barang from tb_barang
+            cur.execute(f"SELECT * FROM barang WHERE id_barang = {id_barang}")
+            # result_barang = select * from tb_barang WHERE id_barang = result_detail->id_barang
+            end_time = time()
+
+            operasi_query_select += 1
+            total_time_select += (end_time - start_time)
+
+        start_time = time()
+        # Delete data detail transaksi from tb_trans_detail
+        cur.execute(f"DELETE FROM detail_transaksi WHERE id_transaksi = {idTrans}")
+        # delete data from tb_trans_detail WHERE id_trans = idTrans
+        end_time = time()
+
+        operasi_query_delete += 1
+        total_time_delete += (end_time - start_time)
+
+        start_time = time()
+        # Delete data transaksi from tb_trans
+        cur.execute(f"DELETE FROM transaksi WHERE id_transaksi = {idTrans}")
+        # delete data from tb_trans WHERE id_trans = idTrans
+        end_time = time()
+
+        operasi_query_delete += 1
+        total_time_delete += (end_time - start_time)
 
     # DATA BARANG + PELANGGAN
     for i in range(10):
