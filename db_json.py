@@ -25,7 +25,7 @@ conn = mysql.connect(
 # KODE PROGRAM
 # =============
 
-def test(n: int):
+def test(n:int):
 
     # =============
     # INIT PROGRAM
