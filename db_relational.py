@@ -101,7 +101,9 @@ def test(n:int):
     conn.commit()
 
     # DATA BARANG + PELANGGAN
+    print("INSERTING DATA BARANG + PELANGGAN")
     for i in range(10):
+
         # INSERT DATA BARANG
         nama_barang:str = listNamaBarang[i]
         stok_barang:int = 50
@@ -133,8 +135,9 @@ def test(n:int):
     # DATA TRANS + DETAIL TRANS
     idBarang = 1
     idMember = 1
+    print("INSERTING DATA TRANSAKSI + SELECT PROSES")
     for i in range(n):
-        print(f"insert {i+1}")
+        # print(f"insert {i+1}")
         subtotal = 0
         idTrans = i + 1
 
@@ -224,8 +227,9 @@ def test(n:int):
             size_db = cur.fetchone()['SIZE']
 
     # DELETE DATA TRANSAKSI = DETAIL
+    print("DELETING DATA TRANSAKSI")
     for i in range(n):
-        print(f"delete {i+1}")
+        # print(f"delete {i+1}")
         idTrans = i + 1
 
         # DELETE DATA TRANSAKSI
@@ -247,6 +251,7 @@ def test(n:int):
         total_time_delete += (end_time - start_time)
 
     # DATA BARANG + PELANGGAN
+    print("DELETING DATA BARANG + PELANGGAN")
     for i in range(10):
         id_ref:int = i+1
 
@@ -271,18 +276,24 @@ def test(n:int):
     # PRINT HASIL TESTING
     print()
     insert_avg_execution_time = total_time_insert / operasi_query_insert
-    print(f"Average execution time for WRITE OPERATION on Relational Database : \n{insert_avg_execution_time:.6f} seconds")
-    print(f"Total request for WRITE OPERATION on Relational Database : {operasi_query_insert} request")
+    # print(f"Average execution time for WRITE OPERATION on Relational JSON Database : \n{insert_avg_execution_time:.6f} seconds")
+    # print(f"Total execution time for WRITE OPERATION on Relational JSON Database : {total_time_insert:.6f} seconds")
+    # print(f"Total request for WRITE OPERATION on Relational JSON Database : {operasi_query_insert} request")
+    print(f"WRITE OPERATION average time : {insert_avg_execution_time:.6f} seconds")
+    print(f"WRITE OPERATION total time : {total_time_insert:.6f} seconds")
+    print(f"WRITE OPERATION total request : {operasi_query_insert} request")
     print()
 
     select_avg_execution_time = total_time_select / operasi_query_select
-    print(f"Average execution time for READ OPERATION on Relational Database : \n{select_avg_execution_time:.6f} seconds")
-    print(f"Total request for READ OPERATION on Relational Database : {operasi_query_select} request")
+    print(f"READ OPERATION average time : {select_avg_execution_time:.6f} seconds")
+    print(f"READ OPERATION total time : {total_time_select:.6f} seconds")
+    print(f"READ OPERATION total request : {operasi_query_select} request")
     print()
 
     delete_avg_execution_time = total_time_delete / operasi_query_delete
-    print(f"Average execution time for DELETE OPERATION on Relational Database : \n{delete_avg_execution_time:.6f} seconds")
-    print(f"Total request for DELETE OPERATION on Relational Database : {operasi_query_delete} request")
+    print(f"DELETE OPERATION average time : {delete_avg_execution_time:.6f} seconds")
+    print(f"DELETE OPERATION total time : {total_time_delete:.6f} seconds")
+    print(f"DELETE OPERATION total request : {operasi_query_delete} request")
     print()
 
     print(f"Total Size for Relational Database : {size_db} mb")

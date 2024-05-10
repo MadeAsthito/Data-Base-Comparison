@@ -83,14 +83,26 @@ def test(n:int):
     # RESET AUTO INCREMENT
     cur.execute("ALTER TABLE pelanggan AUTO_INCREMENT = 1")
     conn.commit()
+    cur.execute("TRUNCATE TABLE pelanggan")
+    conn.commit()
+
     cur.execute("ALTER TABLE barang AUTO_INCREMENT = 1")
     conn.commit()
+    cur.execute("TRUNCATE TABLE barang")
+    conn.commit()
+
     cur.execute("ALTER TABLE transaksi AUTO_INCREMENT = 1")
     conn.commit()
+    cur.execute("TRUNCATE TABLE transaksi")
+    conn.commit()
+
     cur.execute("ALTER TABLE detail_transaksi AUTO_INCREMENT = 1")
+    conn.commit()
+    cur.execute("TRUNCATE TABLE detail_transaksi")
     conn.commit()
 
     # DATA BARANG + PELANGGAN
+    print("INSERTING DATA BARANG + PELANGGAN")
     for i in range(10):
         # INSERT DATA BARANG
         nama_barang:str = listNamaBarang[i]
@@ -123,19 +135,20 @@ def test(n:int):
     # DATA TRANS + DETAIL TRANS
     idBarang = 1
     idMember = 1
+    print("INSERTING DATA TRANSAKSI + SELECT PROSES")
     for i in range(n):
-        print(f"insert {i+1}")
+        # print(f"insert {i+1}")
         subtotal = 0
         idTrans = i + 1
 
         data_barang = []
         for j in range(5):
-            # INSERT DATA DETAIL TRANSAKSI
             id_barang = idBarang
             harga_jual = listHargaJualBarang[id_barang-1]
             qty = 5
             total_harga = harga_jual * qty
 
+            # INSERT DATA DETAIL TRANSAKSI
             start_time = time.time()
             cur.execute("INSERT INTO detail_transaksi (id_transaksi, id_barang, jumlah, harga_per_item, total_harga) VALUES (%s, %s, %s, %s, %s)",(idTrans, id_barang, qty, harga_jual, total_harga))
             conn.commit()
@@ -147,12 +160,11 @@ def test(n:int):
             subtotal += total_harga
             idBarang += 1
 
-            # TODO
+            # SELECT DATA BARANG FOR JSON
             start_time = time.time()
             cur.execute(f"SELECT nama_barang, stok_barang, deskripsi, harga_beli, harga_jual FROM barang WHERE id_barang = {id_barang} ")
-            res_barang = cur.fetchone()
-            # res_barang = select barang by id_barang
             end_time = time.time()
+            res_barang = cur.fetchone()
             total_time_select += (end_time - start_time)
             operasi_query_select += 1
             
@@ -160,14 +172,12 @@ def test(n:int):
             res_barang['harga_per_item'] = harga_jual
             res_barang['total_harga'] = total_harga
             data_barang.append(res_barang)
-            # json transform(res_barang)
-            # array.append(json)
+
+            # Pengulangan ID BARANG
+            if idBarang > 10:
+                idBarang = 1
         
         json_barang = json.dumps(data_barang)
-
-        # Pengulangan ID BARANG
-        if idBarang > 10:
-            idBarang = 1
 
         id_member = idMember
 
@@ -178,23 +188,21 @@ def test(n:int):
 
         status = listEnum[1]
 
-        # TODO
+        # SELECT DATA PELANGGAN FOR JSON
         data_pelanggan = []
         start_time = time.time()
         cur.execute(f"SELECT * FROM pelanggan WHERE id_pelanggan = {id_member}")
-        res_pelanggan = cur.fetchone()
-        # res_pelanggan = select pelanggan by id_pelanggan
         end_time = time.time()
+        res_pelanggan = cur.fetchone()
         total_time_select += (end_time - start_time)
         operasi_query_select += 1
 
         res_pelanggan['created_at'] = res_pelanggan['created_at'].isoformat()
         data_pelanggan.append(res_pelanggan)
-        # json transform(res_pelanggan)
         json_pelanggan = json.dumps(data_pelanggan)
 
+        # INSERT DATA TRANSAKSI
         start_time = time.time()
-        # Insert data transaksi into tb_trans
         cur.execute("INSERT INTO transaksi (id_pelanggan, status, subtotal, data_barang, data_pelanggan) VALUES (%s, %s, %s, %s, %s)", (id_member, status, subtotal, json_barang, json_pelanggan))
         conn.commit()
         end_time = time.time()
@@ -202,82 +210,45 @@ def test(n:int):
         operasi_query_insert += 1
         total_time_insert += (end_time - start_time)
 
+        # SELECT DATA TRANSAKSI
         start_time = time.time()
-        # Select data transaksi from tb_trans
         cur.execute(f"SELECT * from transaksi WHERE id_transaksi = {idTrans}")
-        cur.fetchone()
-        # result_trans = select * from tb_trans WHERE id_trans = idTrans
         end_time = time.time()
-        # GET DATA TRANS
+        cur.fetchone()
     
         operasi_query_select += 1
         total_time_select += (end_time - start_time)
-        # id_pelanggan = data_trans['id_pelanggan']
-
-        # start_time = time.time()
-        # # Select data pelanggan from tb_pelanggan
-        # cur.execute(f"SELECT * from pelanggan WHERE id_pelanggan = {id_pelanggan}")
-        # # result_pelanggan = select * from tb_pelanggan WHERE id_pelanggan = result_trans->id_pelanggan
-        # end_time = time.time()
-        # cur.fetchone()
-
-        # operasi_query_select += 1
-        # total_time_select += (end_time - start_time)
-
-        # for j in range(5):
-        #     idDetail = ((i+1) * 5) - 5 + (j+1)
-
-        #     start_time = time.time()
-        #     # Select data detail transaksi from tb_trans_detail
-        #     cur.execute(f"SELECT * FROM detail_transaksi WHERE id_detail_transaksi = {idDetail}")
-        #     # result_detail = select * from tb_trans_detail WHERE id_detail = idDetail
-        #     end_time = time.time()
-        #     data_detail = cur.fetchone()
-
-        #     operasi_query_select += 1
-        #     total_time_select += (end_time - start_time)
-            
-        #     id_barang = data_detail['id_barang']
-
-        #     start_time = time.time()
-        #     # Select data barang from tb_barang
-        #     cur.execute(f"SELECT * FROM barang WHERE id_barang = {id_barang}")
-        #     # result_barang = select * from tb_barang WHERE id_barang = result_detail->id_barang
-        #     end_time = time.time()
-        #     cur.fetchone()
-
-        #     operasi_query_select += 1
-        #     total_time_select += (end_time - start_time)
 
         # GET DB SIZE
         cur.execute(f"SELECT table_schema AS `DATABASE`, SUM(data_length + index_length) / (1024 * 1024) AS `SIZE` FROM information_schema.tables WHERE table_schema = '{DB_NAME}' GROUP BY table_schema;")
         size_db = cur.fetchone()['SIZE']
 
     # DELETE DATA TRANS = DETAIL
+    print("DELETING DATA TRANSAKSI")
     for i in range(n):
-        print(f"delete {i+1}")
+        # print(f"delete {i+1}")
         idTrans = i + 1
+
+        # DELETE DATA TRANSAKSI
         start_time = time.time()
-        # Delete data detail transaksi from tb_trans_detail
         cur.execute(f"DELETE FROM detail_transaksi WHERE id_transaksi = {idTrans}")
         conn.commit()
-        # delete data from tb_trans_detail WHERE id_trans = idTrans
         end_time = time.time()
 
         operasi_query_delete += 1
         total_time_delete += (end_time - start_time)
 
+        # DELETE DATA DETAIL TRANSAKSI
         start_time = time.time()
-        # Delete data transaksi from tb_trans
         cur.execute(f"DELETE FROM transaksi WHERE id_transaksi = {idTrans}")
         conn.commit()
-        # delete data from tb_trans WHERE id_trans = idTrans
         end_time = time.time()
 
         operasi_query_delete += 1
         total_time_delete += (end_time - start_time)
 
     # DATA BARANG + PELANGGAN
+    print("DELETING DATA BARANG + PELANGGAN")
     for i in range(10):
         id_ref:int = i+1
 
@@ -301,18 +272,24 @@ def test(n:int):
 
     # PRINT HASIL TESTING
     insert_avg_execution_time = total_time_insert / operasi_query_insert
-    print(f"Average execution time for WRITE OPERATION on Relational JSON Database : \n{insert_avg_execution_time:.6f} seconds")
-    print(f"Total request for WRITE OPERATION on Relational Database : {operasi_query_insert} request")
+    # print(f"Average execution time for WRITE OPERATION on Relational JSON Database : \n{insert_avg_execution_time:.6f} seconds")
+    # print(f"Total execution time for WRITE OPERATION on Relational JSON Database : {total_time_insert:.6f} seconds")
+    # print(f"Total request for WRITE OPERATION on Relational JSON Database : {operasi_query_insert} request")
+    print(f"WRITE OPERATION average time : {insert_avg_execution_time:.6f} seconds")
+    print(f"WRITE OPERATION total time : {total_time_insert:.6f} seconds")
+    print(f"WRITE OPERATION total request : {operasi_query_insert} request")
     print()
 
     select_avg_execution_time = total_time_select / operasi_query_select
-    print(f"Average execution time for READ OPERATION on Relational JSON Database : \n{select_avg_execution_time:.6f} seconds")
-    print(f"Total request for READ OPERATION on Relational Database : {operasi_query_select} request")
+    print(f"READ OPERATION average time : {select_avg_execution_time:.6f} seconds")
+    print(f"READ OPERATION total time : {total_time_select:.6f} seconds")
+    print(f"READ OPERATION total request : {operasi_query_select} request")
     print()
 
     delete_avg_execution_time = total_time_delete / operasi_query_delete
-    print(f"Average execution time for DELETE OPERATION on Relational JSON Database : \n{delete_avg_execution_time:.6f} seconds")
-    print(f"Total request for DELETE OPERATION on Relational Database : {operasi_query_delete} request")
+    print(f"DELETE OPERATION average time : {delete_avg_execution_time:.6f} seconds")
+    print(f"DELETE OPERATION total time : {total_time_delete:.6f} seconds")
+    print(f"DELETE OPERATION total request : {operasi_query_delete} request")
     print()
 
     print(f"Total Size for Relational JSON Database : {size_db} mb")
