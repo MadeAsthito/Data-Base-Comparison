@@ -279,6 +279,8 @@ def test(n:int):
     # print(f"Average execution time for WRITE OPERATION on Relational JSON Database : \n{insert_avg_execution_time:.6f} seconds")
     # print(f"Total execution time for WRITE OPERATION on Relational JSON Database : {total_time_insert:.6f} seconds")
     # print(f"Total request for WRITE OPERATION on Relational JSON Database : {operasi_query_insert} request")
+    print()
+    print("RESULT TESTING : RELATIONAL ")
     print(f"WRITE OPERATION average time : {insert_avg_execution_time:.6f} seconds")
     print(f"WRITE OPERATION total time : {total_time_insert:.6f} seconds")
     print(f"WRITE OPERATION total request : {operasi_query_insert} request")
