@@ -53,6 +53,19 @@
 
 - DB_SIZE : <b>2.0938 mb</b>
 
+## Firestore
+### 1000 Transaction
+- WRITE OPERATION time : <b>0.058674 seconds</b>
+- WRITE OPERATION total : <b>1020 request</b>
+
+- READ OPERATION time : <b>0.000000 seconds</b>
+- READ OPERATION total : <b>1000 request</b>
+
+- DELETE OPERATION time : <b>0.058087 seconds</b>
+- DELETE OPERATION total : <b>1020 request</b>
+
+- DB_SIZE : <b>0.5630 mb</b>
+
 ## DIFFERENCE
 
 ### Relational : JSON (10 Transaction)

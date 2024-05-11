@@ -252,5 +252,5 @@ def test(n:int):
 
     # CALCULATE MB
     size_db = size_db / (1024 * 1024) 
-    print(f"Total Size for Relational + Caching Database : {size_db} mb")
+    print(f"Total Size for Firestore Database : {size_db} mb")
     print()
