@@ -1,17 +1,21 @@
 import mysql.connector as mysql 
 import time
-import random
+import os
 import json
 from datetime import datetime
 
 from typing import Final
 from pymemcache.client import base
+from dotenv import load_dotenv
+
+# LOAD DOT ENV FILE
+load_dotenv()
 
 # CONST
-DB_HOST: Final = "localhost"
-DB_USER: Final = "root"
-DB_PASSWORD: Final = ""
-DB_NAME: Final = "db_toko_json"
+DB_HOST: Final = os.getenv("DB_HOST")
+DB_USER: Final = os.getenv("DB_USER")
+DB_PASSWORD: Final = os.getenv("DB_PASSWORD")
+DB_NAME: Final = os.getenv("DB_NAME_JSON")
 
 # CONNECT DATABASE
 conn = mysql.connect(

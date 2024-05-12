@@ -1,14 +1,19 @@
 import mysql.connector as mysql 
 import time
+import os
 
 from typing import Final
 from pymemcache.client import base
+from dotenv import load_dotenv
+
+# LOAD DOT ENV FILE
+load_dotenv()
 
 # CONST
-DB_HOST: Final = "localhost"
-DB_USER: Final = "root"
-DB_PASSWORD: Final = ""
-DB_NAME: Final = "db_toko_relational"
+DB_HOST: Final = os.getenv("DB_HOST")
+DB_USER: Final = os.getenv("DB_USER")
+DB_PASSWORD: Final = os.getenv("DB_PASSWORD")
+DB_NAME: Final = os.getenv("DB_NAME_RELATIONAL")
 
 # CONNECT DATABASE
 conn = mysql.connect(
@@ -79,7 +84,8 @@ def test(n:int):
 
     # INIT CURSOR + CACHE CLIENT
     cur = conn.cursor(dictionary=True)
-    client = base.Client(('localhost', 11211))
+    client = base.Client(('10.35.96.3', 11211))
+    client.flush_all()
 
     # RESET AUTO INCREMENT + DELETE ALL DATA ON DATABASE
     cur.execute("ALTER TABLE pelanggan AUTO_INCREMENT = 1")
@@ -103,6 +109,7 @@ def test(n:int):
     conn.commit()
 
     # DATA BARANG + PELANGGAN
+    print("INSERTING DATA BARANG + PELANGGAN")
     for i in range(10):
         # INSERT DATA BARANG
         nama_barang:str = listNamaBarang[i]
@@ -135,8 +142,8 @@ def test(n:int):
     # DATA TRANS + DETAIL TRANS
     idBarang = 1
     idMember = 1
+    print("INSERTING DATA TRANSAKSI")
     for i in range(n):
-        print(f"insert {i+1}")
         subtotal = 0
         idTrans = i + 1
 
@@ -193,11 +200,13 @@ def test(n:int):
         # SELECT DATA PELANGGAN : CACHE   
         start_time = time.time()
         cache_pelanggan = client.get(f"pelanggan_{id_pelanggan}")
+        end_time = time.time()
         if cache_pelanggan is None:
+            start_time = time.time()
             cur.execute(f"SELECT * from pelanggan WHERE id_pelanggan = {id_pelanggan}")
+            end_time = time.time()
             data_pelanggan = cur.fetchone()
             client.set(f"pelanggan_{id_pelanggan}", data_pelanggan)
-        end_time = time.time()
         cur.fetchone()
 
         operasi_query_select += 1
@@ -219,11 +228,13 @@ def test(n:int):
             id_barang = data_detail['id_barang']
             start_time = time.time()
             cache_barang = client.get(f"barang_{id_barang}")
+            end_time = time.time()
             if cache_barang is None:
+                start_time = time.time()
                 cur.execute(f"SELECT * FROM barang WHERE id_barang = {id_barang}")
+                end_time = time.time()
                 data_barang = cur.fetchone()
                 client.set(f"barang_{id_barang}", data_barang)
-            end_time = time.time()
             cur.fetchone()
 
             operasi_query_select += 1
@@ -234,8 +245,9 @@ def test(n:int):
             size_db = cur.fetchone()['SIZE']
 
     # DELETE DATA TRANSAKSI = DETAIL
+    print("DELETING DATA TRANSAKSI")
     for i in range(n):
-        print(f"delete {i+1}")
+        # print(f"delete {i+1}")
         idTrans = i + 1
 
         # DELETE DATA TRANSAKSI
@@ -257,6 +269,7 @@ def test(n:int):
         total_time_delete += (end_time - start_time)
 
     # DATA BARANG + PELANGGAN
+    print("DELETING DATA BARANG + PELANGGAN")
     for i in range(10):
         id_ref:int = i+1
 
@@ -281,18 +294,23 @@ def test(n:int):
     # PRINT HASIL TESTING
     print()
     insert_avg_execution_time = total_time_insert / operasi_query_insert
-    print(f"Average execution time for WRITE OPERATION on Relational + Caching Database : \n{insert_avg_execution_time:.6f} seconds")
-    print(f"Total request for WRITE OPERATION on Relational + Caching Database : {operasi_query_insert} request")
+    print()
+    print("RESULT TESTING : RELATIONAL + CACHING ")
+    print(f"WRITE OPERATION average time : {insert_avg_execution_time:.6f} seconds")
+    print(f"WRITE OPERATION total time : {total_time_insert:.6f} seconds")
+    print(f"WRITE OPERATION total request : {operasi_query_insert} request")
     print()
 
     select_avg_execution_time = total_time_select / operasi_query_select
-    print(f"Average execution time for READ OPERATION on Relational + Caching Database : \n{select_avg_execution_time:.6f} seconds")
-    print(f"Total request for READ OPERATION on Relational + Caching Database : {operasi_query_select} request")
+    print(f"READ OPERATION average time : {select_avg_execution_time:.6f} seconds")
+    print(f"READ OPERATION total time : {total_time_select:.6f} seconds")
+    print(f"READ OPERATION total request : {operasi_query_select} request")
     print()
 
     delete_avg_execution_time = total_time_delete / operasi_query_delete
-    print(f"Average execution time for DELETE OPERATION on Relational + Caching Database : \n{delete_avg_execution_time:.6f} seconds")
-    print(f"Total request for DELETE OPERATION on Relational + Caching Database : {operasi_query_delete} request")
+    print(f"DELETE OPERATION average time : {delete_avg_execution_time:.6f} seconds")
+    print(f"DELETE OPERATION total time : {total_time_delete:.6f} seconds")
+    print(f"DELETE OPERATION total request : {operasi_query_delete} request")
     print()
 
     print(f"Total Size for Relational + Caching Database : {size_db} mb")
