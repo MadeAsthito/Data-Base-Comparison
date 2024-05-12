@@ -1,8 +1,8 @@
-import db_relational
-import db_json
-import db_caching
-import db_json_caching
-import db_firestore
+from src import db_relational
+from src import db_json
+from src import db_caching
+from src import db_json_caching
+from src import db_firestore
 
 # MAIN
 if __name__ == '__main__':
